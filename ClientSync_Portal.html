@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClientSync Portal - B2B Client Portals & Interactive Proposals</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="setActiveTab('dashboard')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid font-bold fa-bolt text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">ClientSync</span>
+                        <span class="text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md ml-1 border border-brand-100">PRO</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="hidden md:flex space-x-1">
+                    <button id="nav-dashboard" onclick="setActiveTab('dashboard')" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-slate-100 text-slate-900">
+                        <i class="fa-solid fa-chart-pie mr-2 text-brand-600"></i>Dashboard
+                    </button>
+                    <button id="nav-proposals" onclick="setActiveTab('proposals')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-file-signature mr-2 text-slate-400"></i>Proposals
+                    </button>
+                    <button id="nav-clients" onclick="setActiveTab('clients')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-users mr-2 text-slate-400"></i>Clients
+                    </button>
+                    <button id="nav-analytics" onclick="setActiveTab('analytics')" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                        <i class="fa-solid fa-chart-line mr-2 text-slate-400"></i>Analytics
+                    </button>
+                </div>
+
+                <!-- Action Buttons & Profile -->
+                <div class="flex items-center space-x-3">
+                    <button onclick="openCreateModal()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm px-4 py-2 rounded-lg shadow-sm shadow-brand-600/30 transition-all flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i> New Proposal
+                    </button>
+                    <div class="h-6 w-px bg-slate-200"></div>
+                    <div class="flex items-center space-x-2">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-9 h-9 rounded-full border border-slate-200 object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Body Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+        <!-- Top Analytics Overview Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-0.5" id="kpi-revenue">$0</h3>
+                    <p class="text-xs text-emerald-600 font-medium mt-1"><i class="fa-solid fa-arrow-up text-[10px] mr-1"></i>+18.4% this month</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-brand-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Proposals</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-0.5" id="kpi-active">0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Live client pipelines</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-clock font-normal"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Signatures</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-0.5" id="kpi-pending">0</h3>
+                    <p class="text-xs text-amber-600 font-medium mt-1">Action required</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Conversion Rate</p>
+                    <h3 class="text-2xl font-bold text-slate-900 mt-0.5" id="kpi-conversion">88%</h3>
+                    <p class="text-xs text-purple-600 font-medium mt-1">Industry avg: 42%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Proposal Sidebar List -->
+            <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
+                <!-- Filters & Title -->
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                    <h2 class="font-bold text-slate-800 text-sm tracking-wide uppercase">All Proposals</h2>
+                    <span class="text-xs bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full" id="proposal-count">0</span>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex space-x-1 mb-4 overflow-x-auto pb-1 text-xs">
+                    <button onclick="setFilter('all')" id="filter-all" class="px-2.5 py-1.5 rounded-lg font-medium transition-all bg-slate-900 text-white">All</button>
+                    <button onclick="setFilter('Pending')" id="filter-Pending" class="px-2.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100">Pending</button>
+                    <button onclick="setFilter('Signed & Paid')" id="filter-Paid" class="px-2.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100">Paid</button>
+                    <button onclick="setFilter('Draft')" id="filter-Draft" class="px-2.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100">Drafts</button>
+                </div>
+
+                <!-- Proposal Cards List -->
+                <div id="proposal-list" class="space-y-2.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+
+            <!-- Right Column: Interactive Proposal Inspector & Signature Workspace -->
+            <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8 min-h-[620px]" id="proposal-detail-panel">
+                <!-- Dynamic Content Rendered Here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL 1: Create New Proposal Modal -->
+    <div id="modal-create" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
+                        <i class="fa-solid fa-file-circle-plus"></i>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-base">Create New Client Proposal</h3>
+                </div>
+                <button onclick="closeCreateModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form onsubmit="handleCreateProposal(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Client Name / Business</label>
+                    <input type="text" id="new-client" required placeholder="e.g. Acme Tech Solutions" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Project Title</label>
+                    <input type="text" id="new-title" required placeholder="e.g. Q4 Brand Refresh & Web Platform" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Total Fee ($ USD)</label>
+                        <input type="number" id="new-amount" required min="100" step="50" placeholder="12000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Deposit Required (%)</label>
+                        <select id="new-deposit-pct" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm bg-white">
+                            <option value="20">20% Deposit</option>
+                            <option value="25" selected>25% Deposit</option>
+                            <option value="33">33% Deposit</option>
+                            <option value="50">50% Upfront Deposit</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Scope Deliverables (Comma Separated)</label>
+                    <textarea id="new-scope" rows="3" required placeholder="Brand Guidelines, Custom Responsive Web Design, CMS Setup & Live Training" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm custom-scrollbar"></textarea>
+                </div>
+                <div class="pt-2 flex justify-end space-x-3">
+                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 transition-colors">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm shadow-md shadow-brand-600/30 transition-all">Generate & Send Proposal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Stripe Mock Payment Modal -->
+    <div id="modal-payment" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <span class="font-bold text-slate-900 text-sm">Secure Payment Gateway</span>
+                </div>
+                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Payment Amount Header -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 mb-5 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500">Deposit Due Today</p>
+                        <p class="text-xl font-bold text-slate-900" id="payment-amount-display">$0</p>
+                    </div>
+                    <div class="flex items-center space-x-1 text-slate-400 text-lg">
+                        <i class="fa-brands fa-cc-visa"></i>
+                        <i class="fa-brands fa-cc-mastercard"></i>
+                        <i class="fa-brands fa-cc-amex"></i>
+                    </div>
+                </div>
+
+                <form onsubmit="processStripePayment(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cardholder Name</label>
+                        <input type="text" id="card-name" required placeholder="Alex Rivera" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Card Number</label>
+                        <div class="relative">
+                            <input type="text" required placeholder="4242 •••• •••• 4242" maxlength="19" value="4242 4242 4242 4242" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm font-mono">
+                            <i class="fa-solid fa-credit-card absolute right-3.5 top-3 text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Expiry Date</label>
+                            <input type="text" required placeholder="08 / 28" value="12 / 28" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">CVC Code</label>
+                            <input type="password" required placeholder="123" maxlength="4" value="888" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm font-mono">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="pay-btn" class="w-full mt-2 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-shield-halved mr-2"></i> Pay Deposit & Activate Agreement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        const STORAGE_KEY = 'clientsync_proposals_data_v1';
+
+        // Default Initial Data Seed
+        const INITIAL_PROPOSALS = [
+            {
+                id: 'prop-101',
+                client: 'East Coast Sports Academy',
+                title: '2026 Sports Tournament Logistics & Event Hub',
+                amount: 18500,
+                depositPct: 25,
+                status: 'Pending', // Pending, Signed & Paid, Draft
+                createdDate: '2026-09-15',
+                scope: ['Multi-venue Scheduling Engine', 'Participant Registration Portal', 'Live Scoreboard Integration', 'On-site Staff Management'],
+                signature: null,
+                signedDate: null
+            },
+            {
+                id: 'prop-102',
+                client: 'Apex Fitness & Wellness',
+                title: 'Brand Identity Strategy & Digital App Design',
+                amount: 9400,
+                depositPct: 33,
+                status: 'Signed & Paid',
+                createdDate: '2026-09-10',
+                scope: ['Comprehensive Brand Kit & Style Guide', 'UI/UX Mobile App Figma Prototypes', 'Design System Documentation'],
+                signature: 'Marcus Aurelius',
+                signedDate: '2026-09-12'
+            },
+            {
+                id: 'prop-103',
+                client: 'Vanguard Culinary Group',
+                title: 'Boutique Catering Management Portal',
+                amount: 14200,
+                depositPct: 20,
+                status: 'Draft',
+                createdDate: '2026-09-18',
+                scope: ['Menu Engineering System', 'Automated Quote Generator', 'Staff Rostering Module'],
+                signature: null,
+                signedDate: null
+            }
+        ];
+
+        let proposals = [];
+        let selectedProposalId = null;
+        let currentFilter = 'all';
+
+        // Initialize App on DOM Ready
+        window.onload = function() {
+            loadProposalsFromStorage();
+            if (proposals.length > 0) {
+                selectedProposalId = proposals[0].id;
+            }
+            renderAll();
+        };
+
+        function loadProposalsFromStorage() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    proposals = JSON.parse(saved);
+                } catch(e) {
+                    proposals = INITIAL_PROPOSALS;
+                }
+            } else {
+                proposals = INITIAL_PROPOSALS;
+                saveProposalsToStorage();
+            }
+        }
+
+        function saveProposalsToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(proposals));
+        }
+
+        function renderAll() {
+            renderKPIs();
+            renderProposalList();
+            renderProposalDetail();
+        }
+
+        function renderKPIs() {
+            const totalRevenue = proposals
+                .filter(p => p.status === 'Signed & Paid')
+                .reduce((sum, p) => sum + (p.amount * (p.depositPct / 100)), 0);
+
+            const activeCount = proposals.filter(p => p.status !== 'Draft').length;
+            const pendingCount = proposals.filter(p => p.status === 'Pending').length;
+
+            document.getElementById('kpi-revenue').innerText = '$' + totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('kpi-active').innerText = activeCount;
+            document.getElementById('kpi-pending').innerText = pendingCount;
+            document.getElementById('proposal-count').innerText = proposals.length;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            ['all', 'Pending', 'Paid', 'Draft'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (btn) {
+                    if (f === filter || (f === 'Paid' && filter === 'Signed & Paid')) {
+                        btn.className = "px-2.5 py-1.5 rounded-lg font-medium transition-all bg-slate-900 text-white";
+                    } else {
+                        btn.className = "px-2.5 py-1.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100";
+                    }
+                }
+            });
+            renderProposalList();
+        }
+
+        function renderProposalList() {
+            const listEl = document.getElementById('proposal-list');
+            listEl.innerHTML = '';
+
+            const filtered = proposals.filter(p => {
+                if (currentFilter === 'all') return true;
+                if (currentFilter === 'Paid') return p.status === 'Signed & Paid';
+                return p.status === currentFilter;
+            });
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">No proposals matching this view.</div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const isSelected = p.id === selectedProposalId;
+                const depositAmt = (p.amount * (p.depositPct / 100)).toLocaleString();
+
+                let statusBadge = '';
+                if (p.status === 'Signed & Paid') {
+                    statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200/60 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-check mr-1"></i>Paid</span>`;
+                } else if (p.status === 'Pending') {
+                    statusBadge = `<span class="bg-amber-50 text-amber-700 border border-amber-200/60 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-clock mr-1"></i>Pending</span>`;
+                } else {
+                    statusBadge = `<span class="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full">Draft</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.onclick = () => {
+                    selectedProposalId = p.id;
+                    renderAll();
+                };
+
+                card.className = `p-3.5 rounded-xl border transition-all cursor-pointer ${
+                    isSelected 
+                        ? 'border-brand-500 bg-brand-50/40 shadow-sm ring-1 ring-brand-500/20' 
+                        : 'border-slate-200/80 hover:border-slate-300 bg-white'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-slate-900 text-sm truncate pr-2">${p.client}</h4>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1 line-clamp-1">${p.title}</p>
+                    <div class="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="font-bold text-slate-800">$${p.amount.toLocaleString()}</span>
+                        <span class="text-slate-400">Deposit: <strong class="text-slate-600">$${depositAmt}</strong></span>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        function renderProposalDetail() {
+            const panel = document.getElementById('proposal-detail-panel');
+            const p = proposals.find(item => item.id === selectedProposalId);
+
+            if (!p) {
+                panel.innerHTML = `<div class="text-center py-20 text-slate-400">Select a proposal from the left sidebar to view details.</div>`;
+                return;
+            }
+
+            const depositAmt = (p.amount * (p.depositPct / 100));
+
+            panel.innerHTML = `
+                <div class="animate-fade-in space-y-6">
+                    <!-- Header Bar -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-5 border-b border-slate-100 gap-4">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-mono font-semibold text-slate-400 uppercase tracking-wider">${p.id}</span>
+                                <span class="text-xs text-slate-300">•</span>
+                                <span class="text-xs text-slate-500">Created ${p.createdDate}</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-slate-900 mt-1">${p.title}</h2>
+                            <p class="text-sm font-semibold text-brand-600 mt-0.5"><i class="fa-solid fa-building mr-1.5"></i>${p.client}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="downloadProposalReceipt('${p.id}')" class="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition-colors flex items-center">
+                                <i class="fa-solid fa-download mr-1.5"></i> Export PDF
+                            </button>
+                            <button onclick="deleteProposal('${p.id}')" class="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scope Deliverables Box -->
+                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-200/70">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Deliverables & Scope Breakdown</h3>
+                        <ul class="space-y-2 text-sm text-slate-700">
+                            ${p.scope.map(item => `
+                                <li class="flex items-start">
+                                    <i class="fa-solid fa-circle-check text-brand-500 text-xs mt-1 mr-2.5 shrink-0"></i>
+                                    <span>${item}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+
+                    <!-- Financial Breakdown Table -->
+                    <div class="border border-slate-200/80 rounded-2xl overflow-hidden">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase border-b border-slate-200/80">
+                                <tr>
+                                    <th class="p-3.5">Item Description</th>
+                                    <th class="p-3.5 text-right">Fee</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm text-slate-800">
+                                <tr>
+                                    <td class="p-3.5 font-medium">Professional Services & Strategic Execution</td>
+                                    <td class="p-3.5 text-right font-mono">$${p.amount.toLocaleString()}</td>
+                                </tr>
+                                <tr class="bg-slate-50/50">
+                                    <td class="p-3.5 text-slate-600">Required Deposit Tier (${p.depositPct}%)</td>
+                                    <td class="p-3.5 text-right font-mono font-bold text-slate-900">$${depositAmt.toLocaleString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Electronic Signature & Payment Authorization Box -->
+                    <div class="pt-2">
+                        ${p.status === 'Signed & Paid' ? `
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-emerald-900 flex items-start space-x-4">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-file-contract text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Agreement Fully Authorized & Deposit Completed</h4>
+                                    <p class="text-xs text-emerald-700 mt-0.5">Signed by <strong>${p.signature}</strong> on ${p.signedDate || '2026-09-18'}. Payment deposit of $${depositAmt.toLocaleString()} has been processed via Stripe.</p>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <h4 class="font-bold text-slate-900 text-sm">Sign & Authorize Proposal</h4>
+                                    <span class="text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full font-semibold border border-amber-200">Awaiting Client Approval</span>
+                                </div>
+                                <p class="text-xs text-slate-500">By typing your legal full name below, you electronically agree to the terms and authorize the initial deposit of <strong>$${depositAmt.toLocaleString()}</strong>.</p>
+                                
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-semibold text-slate-600 uppercase">Client Electronic Signature</label>
+                                    <input type="text" id="sig-input" placeholder="Type Full Legal Name (e.g. Eleanor Vance)" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-sm italic font-serif">
+                                </div>
+
+                                <button onclick="openPaymentModal('${p.id}')" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-brand-600/30 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-lock mr-2"></i> Authorize & Pay $${depositAmt.toLocaleString()} Deposit
+                                </button>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openCreateModal() {
+            document.getElementById('modal-create').classList.remove('hidden');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('modal-create').classList.add('hidden');
+        }
+
+        function handleCreateProposal(e) {
+            e.preventDefault();
+            const client = document.getElementById('new-client').value;
+            const title = document.getElementById('new-title').value;
+            const amount = parseFloat(document.getElementById('new-amount').value);
+            const depositPct = parseInt(document.getElementById('new-deposit-pct').value);
+            const scopeText = document.getElementById('new-scope').value;
+
+            const scopeList = scopeText.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+            const newProp = {
+                id: 'prop-' + Math.floor(100 + Math.random() * 900),
+                client,
+                title,
+                amount,
+                depositPct,
+                status: 'Pending',
+                createdDate: new Date().toISOString().split('T')[0],
+                scope: scopeList.length > 0 ? scopeList : ['Full Consultancy & Operational Delivery'],
+                signature: null,
+                signedDate: null
+            };
+
+            proposals.unshift(newProp);
+            selectedProposalId = newProp.id;
+            saveProposalsToStorage();
+            closeCreateModal();
+            renderAll();
+            showToast('Proposal created and client link generated!', 'success');
+
+            // Clear inputs
+            document.getElementById('new-client').value = '';
+            document.getElementById('new-title').value = '';
+            document.getElementById('new-amount').value = '';
+            document.getElementById('new-scope').value = '';
+        }
+
+        let pendingPaymentPropId = null;
+
+        function openPaymentModal(propId) {
+            const sigInput = document.getElementById('sig-input');
+            if (!sigInput || !sigInput.value.trim()) {
+                showToast('Please type your legal signature name before proceeding to payment.', 'error');
+                return;
+            }
+
+            pendingPaymentPropId = propId;
+            const p = proposals.find(item => item.id === propId);
+            const depositAmt = (p.amount * (p.depositPct / 100)).toLocaleString();
+
+            document.getElementById('payment-amount-display').innerText = '$' + depositAmt;
+            document.getElementById('modal-payment').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('modal-payment').classList.add('hidden');
+        }
+
+        function processStripePayment(e) {
+            e.preventDefault();
+            const payBtn = document.getElementById('pay-btn');
+            payBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing Secure Payment...`;
+            payBtn.disabled = true;
+
+            setTimeout(() => {
+                const sigName = document.getElementById('sig-input')?.value || 'Authorized Signer';
+                const p = proposals.find(item => item.id === pendingPaymentPropId);
+
+                if (p) {
+                    p.status = 'Signed & Paid';
+                    p.signature = sigName;
+                    p.signedDate = new Date().toISOString().split('T')[0];
+                    saveProposalsToStorage();
+                }
+
+                payBtn.innerHTML = `<i class="fa-solid fa-shield-halved mr-2"></i> Pay Deposit & Activate Agreement`;
+                payBtn.disabled = false;
+
+                closePaymentModal();
+                renderAll();
+                showToast('Deposit payment processed successfully!', 'success');
+            }, 1400);
+        }
+
+        function deleteProposal(id) {
+            if (confirm("Are you sure you want to delete this proposal?")) {
+                proposals = proposals.filter(p => p.id !== id);
+                if (proposals.length > 0) {
+                    selectedProposalId = proposals[0].id;
+                } else {
+                    selectedProposalId = null;
+                }
+                saveProposalsToStorage();
+                renderAll();
+                showToast('Proposal deleted.', 'info');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let icon = 'fa-circle-check text-emerald-500';
+            if (type === 'error') icon = 'fa-triangle-exclamation text-red-500';
+            if (type === 'info') icon = 'fa-circle-info text-blue-500';
+
+            toast.className = `pointer-events-auto bg-slate-900 text-white text-xs font-medium px-4 py-3 rounded-xl shadow-xl flex items-center space-x-2 animate-fade-in border border-slate-700`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3500);
+        }
+
+        function downloadProposalReceipt(id) {
+            const p = proposals.find(item => item.id === id);
+            if (!p) return;
+
+            const text = `CLIENTSYNC PORTAL - PROPOSAL & RECEIPT SUMMARY\n\n` +
+                         `Proposal ID: ${p.id}\n` +
+                         `Client: ${p.client}\n` +
+                         `Project Title: ${p.title}\n` +
+                         `Total Fee: $${p.amount.toLocaleString()}\n` +
+                         `Deposit Paid: $${(p.amount * (p.depositPct / 100)).toLocaleString()}\n` +
+                         `Status: ${p.status}\n` +
+                         `Signature: ${p.signature || 'N/A'}\n` +
+                         `Date: ${p.signedDate || p.createdDate}\n`;
+
+            const element = document.createElement('a');
+            const file = new Blob([text], {type: 'text/plain'});
+            element.href = URL.createObjectURL(file);
+            element.download = `${p.id}_ClientSync_Agreement.txt`;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            showToast('Document exported to text download!', 'info');
+        }
+
+        function setActiveTab(tab) {
+            ['dashboard', 'proposals', 'clients', 'analytics'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-slate-100 text-slate-900";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors";
+                    }
+                }
+            });
+            showToast(`Switched to ${tab.charAt(0).toUpperCase() + tab.slice(1)} view`, 'info');
+        }
+    </script>
+</body>
+</html>
